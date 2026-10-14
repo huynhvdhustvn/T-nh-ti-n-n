@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sổ Tiền Ăn</title>
+<meta name="theme-color" content="#c2410c">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f6f4ef;--card:#ffffff;--text:#1f2328;--muted:#6b6f76;--line:#e6e2d9;
+  --accent:#c2410c;--accent-soft:#fdeee5;--ok:#15803d;--ok-soft:#e7f5ec;
+  --warn:#b45309;--warn-soft:#fef3e2;--danger:#b91c1c;--chip:#f1eee7;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#16171a;--card:#1f2125;--text:#ececec;--muted:#9a9ea6;--line:#2e3137;
+    --accent:#fb923c;--accent-soft:#3a2416;--ok:#4ade80;--ok-soft:#173022;
+    --warn:#fbbf24;--warn-soft:#352a12;--danger:#f87171;--chip:#2a2c31;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+header{padding:8px 0 16px}
+header .label{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+header h1{margin:2px 0 0;font-size:26px}
+header .clock{color:var(--accent);font-variant-numeric:tabular-nums;font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 12px;font-size:17px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.field{margin-bottom:14px}
+.field>label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600}
+input,select,textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+textarea{resize:vertical;min-height:44px}
+@media (max-width:520px){input,select,textarea{font-size:16px}}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:8px 12px}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:11px 16px}
+button.small{padding:4px 9px;font-size:13px}
+button.link{border:none;background:none;color:var(--accent);padding:4px 6px}
+button.danger{color:var(--danger)}
+.datebar{display:flex;gap:6px;align-items:center}
+.datebar input{flex:1}
+.seg{display:flex;background:var(--chip);border-radius:10px;padding:3px}
+.seg button{flex:1;border:none;background:none;padding:8px}
+.seg button.on{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600;color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border-radius:999px;padding:7px 14px;background:var(--chip);border:1px solid transparent;user-select:none}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.hint{font-size:13px;color:var(--muted);margin-top:6px}
+.hint b{color:var(--text)}
+.banner{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.banner .chips{margin-top:8px}
+.banner .chip{background:var(--card);color:var(--warn);border-color:var(--warn);font-size:13px;padding:4px 10px}
+.meal{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.meal .top{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.badge{font-size:12px;border-radius:6px;padding:2px 8px;background:var(--ok-soft);color:var(--ok);font-weight:600}
+.badge.extra{background:var(--accent-soft);color:var(--accent)}
+.amt{font-weight:700;font-size:17px}
+.meta{font-size:13px;color:var(--muted);margin-top:4px}
+.empty{color:var(--muted);text-align:center;padding:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase}
+tfoot td{font-weight:700;border-bottom:none}
+.pos{color:var(--ok)}.neg{color:var(--danger)}
+.tablewrap{overflow-x:auto}
+.daygroup{margin-top:10px}
+.daygroup .d{font-size:13px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+.mline{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:14px}
+.mline:hover{background:var(--chip)}
+.member{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.member:last-child{border-bottom:none}
+.member.off span{color:var(--muted);text-decoration:line-through}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+#shares{margin-top:10px}
+.share{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.share span{flex:0 0 38%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.share input{padding:7px 10px}
+.hint.err{color:var(--danger)}
+#printArea{display:none}
+@media print{
+  body{background:#fff;color:#000}
+  .wrap,.toast{display:none!important}
+  #printArea{display:block;font:12px/1.45 system-ui,sans-serif;color:#000}
+  #printArea h1{font-size:18px;margin:0 0 2px}
+  #printArea h2{font-size:14px;margin:18px 0 6px}
+  #printArea table{width:100%;border-collapse:collapse}
+  #printArea th,#printArea td{border:1px solid #999;padding:4px 6px;text-align:right;white-space:normal}
+  #printArea th{background:#eee;color:#000;text-transform:none;font-size:12px}
+  #printArea td.l,#printArea th.l{text-align:left}
+  #printArea .sub{color:#555}
+  @page{margin:12mm}
+}
+.editing{outline:2px dashed var(--accent);outline-offset:3px}
+@media (max-width:520px){header h1{font-size:21px}.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="label">Sổ tiền ăn nhóm</div>
+    <h1 id="todayText"></h1>
+    <div class="clock" id="clock"></div>
+  </header>
+
+  <div id="missing"></div>
+
+  <!-- NHẬP BỮA ĂN -->
+  <section class="card" id="entryCard">
+    <h2><span id="entryTitle">Nhập bữa ăn</span>
+      <button class="link" id="cancelEdit" hidden>Hủy sửa</button></h2>
+
+    <div class="field">
+      <label>Ngày</label>
+      <div class="datebar">
+        <button id="prevDay" title="Ngày trước">‹</button>
+        <input type="date" id="date">
+        <button id="nextDay" title="Ngày sau">›</button>
+        <button id="todayBtn">Hôm nay</button>
+      </div>
+      <div class="hint" id="dateHint"></div>
+    </div>
+
+    <div class="field">
+      <label>Loại bữa</label>
+      <div class="seg" id="mealType">
+        <button data-v="chinh" class="on">Bữa chính</button>
+        <button data-v="bosung">Bữa bổ sung</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Người ăn <span id="countText"></span></label>
+      <div class="chips" id="people"></div>
+      <div class="row" style="margin-top:8px">
+        <button class="small" id="selAll">Chọn tất cả</button>
+        <button class="small" id="selNone">Bỏ chọn</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Cách chia</label>
+      <div class="seg" id="splitMode">
+        <button data-v="deu" class="on">Chia đều</button>
+        <button data-v="rieng">Nhập riêng từng người</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="amountLabel">Tổng tiền</label>
+      <input id="amount" inputmode="decimal" placeholder="VD: 350000 hoặc 350k">
+      <div id="shares"></div>
+      <div class="hint" id="amountHint">Gõ tắt được: 350k, 1.2tr</div>
+    </div>
+
+    <div class="field">
+      <label>Ai trả tiền (không bắt buộc)</label>
+      <select id="payer"></select>
+    </div>
+
+    <div class="field">
+      <label>Ghi chú</label>
+      <textarea id="note" placeholder="VD: cơm gà, thêm 2 trà đá"></textarea>
+    </div>
+
+    <button class="primary" id="saveBtn" style="width:100%">Lưu bữa ăn</button>
+  </section>
+
+  <!-- BỮA TRONG NGÀY -->
+  <section class="card">
+    <h2 id="dayTitle">Bữa trong ngày</h2>
+    <div id="dayList"></div>
+  </section>
+
+  <!-- TỔNG KẾT THÁNG -->
+  <section class="card">
+    <h2>Tổng kết tháng
+      <input type="month" id="month" style="width:auto">
+    </h2>
+    <div class="tablewrap"><table id="sumTable"></table></div>
+    <div class="row" style="margin-top:12px">
+      <button id="copyBtn">📋 Copy tin nhắn tổng kết</button>
+    </div>
+    <div id="monthList"></div>
+  </section>
+
+  <!-- XUẤT BÁO CÁO -->
+  <section class="card">
+    <h2>Xuất báo cáo theo khoảng ngày</h2>
+    <div class="row" style="flex-wrap:nowrap">
+      <div style="flex:1"><div class="hint" style="margin:0 0 4px">Từ ngày</div><input type="date" id="rFrom"></div>
+      <div style="flex:1"><div class="hint" style="margin:0 0 4px">Đến ngày</div><input type="date" id="rTo"></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button class="small" data-range="month">Tháng này</button>
+      <button class="small" data-range="lastmonth">Tháng trước</button>
+      <button class="small" data-range="week">Tuần này</button>
+      <button class="small" data-range="7">7 ngày qua</button>
+    </div>
+    <div class="hint" id="rPreview" style="margin-top:10px"></div>
+    <div class="row" style="margin-top:10px">
+      <button id="exportCsv">📊 Xuất Excel</button>
+      <button id="exportPdf">🖨 In / Lưu PDF</button>
+      <button id="copyRange">📋 Copy tin nhắn</button>
+    </div>
+  </section>
+
+  <!-- THÀNH VIÊN -->
+  <section class="card">
+    <h2>Thành viên nhóm</h2>
+    <div class="row" style="flex-wrap:nowrap">
+      <input id="newMember" placeholder="Tên thành viên mới">
+      <button id="addMember" style="white-space:nowrap">+ Thêm</button>
+    </div>
+    <div id="memberList" style="margin-top:8px"></div>
+  </section>
+
+  <!-- SAO LƯU -->
+  <section class="card">
+    <h2>Sao lưu dữ liệu</h2>
+    <p class="hint" style="margin-top:0">Dữ liệu lưu ngay trong trình duyệt này. Thỉnh thoảng nên xuất file để dự phòng, hoặc để chuyển sang máy khác.</p>
+    <div class="row">
+      <button id="exportBtn">⬇ Xuất file sao lưu</button>
+      <button id="importBtn">⬆ Nhập file sao lưu</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+const KEY = 'so-tien-an-v1';
+let S = load();
+function load(){
+  try{
+    const r = localStorage.getItem(KEY);
+    if(r){ const d = JSON.parse(r); return {members:d.members||[], meals:d.meals||[], skips:d.skips||[]}; }
+  }catch(e){}
+  return {members:[], meals:[], skips:[]};
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch(e){ toast('⚠ Không lưu được vào trình duyệt'); }
+}
+
+/* ---------- tiện ích ---------- */
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parseYmd = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const addDays = (s,n) => { const d = parseYmd(s); d.setDate(d.getDate()+n); return ymd(d); };
+const DOW = ['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+const fmtDate = s => { const d = parseYmd(s); return DOW[d.getDay()]+', '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear(); };
+const shortDate = s => { const d = parseYmd(s); return DOW[d.getDay()].replace('Thứ ','T').replace('Chủ nhật','CN')+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1); };
+const money = n => Math.round(n).toLocaleString('vi-VN')+'đ';
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const todayStr = () => ymd(new Date());
+const nameOf = id => (S.members.find(m=>m.id===id)||{name:'(đã xóa)'}).name;
+const typeName = t => t==='bosung' ? 'Bữa bổ sung' : 'Bữa chính';
+
+function parseMoney(v){
+  v = String(v||'').trim().toLowerCase().replace(/\s/g,'').replace(/đ|vnd/g,'');
+  if(!v) return 0;
+  let mul = 1;
+  if(/k$/.test(v)){ mul = 1e3; v = v.slice(0,-1); }
+  else if(/(tr|m)$/.test(v)){ mul = 1e6; v = v.replace(/(tr|m)$/,''); }
+  if(mul > 1) v = v.replace(',','.');
+  else v = v.replace(/[.,]/g,'');
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : Math.round(n*mul);
+}
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ---------- trạng thái form ---------- */
+let curDate = todayStr();
+let curMonth = curDate.slice(0,7);
+let mealType = 'chinh';
+let selected = new Set();
+let editingId = null;
+let splitMode = 'deu';
+let customVals = {};
+
+const activeMembers = () => S.members.filter(m => m.active !== false);
+
+/* ---------- đồng hồ ---------- */
+let lastToday = todayStr();
+function tick(){
+  const now = new Date();
+  $('todayText').textContent = fmtDate(ymd(now));
+  $('clock').textContent = pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+  if(ymd(now) !== lastToday){ lastToday = ymd(now); renderAll(); }
+}
+
+/* ---------- form nhập ---------- */
+function resetForm(){
+  editingId = null;
+  selected = new Set(activeMembers().map(m=>m.id));
+  const hasMain = S.meals.some(m => m.date===curDate && m.type==='chinh');
+  mealType = hasMain ? 'bosung' : 'chinh';
+  splitMode = 'deu'; customVals = {};
+  $('amount').value = ''; $('note').value = ''; $('payer').value = '';
+  $('entryTitle').textContent = 'Nhập bữa ăn';
+  $('saveBtn').textContent = 'Lưu bữa ăn';
+  $('cancelEdit').hidden = true;
+  $('entryCard').classList.remove('editing');
+  renderForm();
+}
+
+function renderForm(){
+  $('date').value = curDate;
+  const t = todayStr();
+  const diff = Math.round((parseYmd(t) - parseYmd(curDate)) / 864e5);
+  $('dateHint').innerHTML = '<b>'+fmtDate(curDate)+'</b>' +
+    (diff===0 ? ' · hôm nay' : diff>0 ? ' · '+diff+' ngày trước (nhập bù)' : ' · ngày trong tương lai');
+
+  document.querySelectorAll('#mealType button').forEach(b => b.classList.toggle('on', b.dataset.v===mealType));
+
+  // người ăn: thành viên đang hoạt động + người đã ẩn nhưng có trong bữa đang sửa
+  const list = S.members.filter(m => m.active!==false || selected.has(m.id));
+  $('people').innerHTML = list.length
+    ? list.map(m => `<span class="chip ${selected.has(m.id)?'on':''}" data-id="${m.id}">${esc(m.name)}</span>`).join('')
+    : '<span class="hint">Chưa có thành viên. Thêm ở mục "Thành viên nhóm" bên dưới.</span>';
+
+  const payerVal = $('payer').value;
+  $('payer').innerHTML = '<option value="">— Không ghi —</option>' +
+    S.members.filter(m => m.active!==false || m.id===payerVal).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  $('payer').value = payerVal;
+
+  renderShares();
+}
+
+/* ô nhập tiền riêng cho từng người */
+function renderShares(){
+  document.querySelectorAll('#splitMode button').forEach(b => b.classList.toggle('on', b.dataset.v===splitMode));
+  const custom = splitMode === 'rieng';
+  $('amountLabel').textContent = custom ? 'Tổng tiền (không bắt buộc)' : 'Tổng tiền';
+  $('amount').placeholder = custom ? 'Để trống = cộng tiền từng người' : 'VD: 350000 hoặc 350k';
+  $('shares').innerHTML = custom ? S.members.filter(m=>selected.has(m.id)).map(m=>
+    `<div class="share"><span>${esc(m.name)}</span>
+      <input data-share="${m.id}" inputmode="decimal" value="${esc(customVals[m.id]||'')}"></div>`).join('') : '';
+  updateHints();
+}
+
+/* tính số tiền từng người phải trả */
+function computeShares(){
+  const ids = [...selected];
+  let total = parseMoney($('amount').value);
+  const shares = {};
+  if(!ids.length) return {total, shares, err:'Chọn ít nhất 1 người ăn'};
+  if(splitMode === 'deu'){
+    if(!total) return {total, shares, err:'Nhập số tiền'};
+    ids.forEach(id => shares[id] = total/ids.length);
+    return {total, shares};
+  }
+  const blanks = []; let fixed = 0;
+  ids.forEach(id => { const v = parseMoney(customVals[id]); if(v>0){ shares[id]=v; fixed+=v; } else blanks.push(id); });
+  if(!total){
+    if(blanks.length) return {total, shares, blanks, err:'Nhập tiền cho từng người, hoặc nhập tổng để chia phần còn lại'};
+    total = fixed;
+  }
+  const rest = total - fixed;
+  if(rest < 0) return {total, shares, err:'Tiền từng người cộng lại ('+money(fixed)+') vượt quá tổng'};
+  if(!blanks.length && rest > 0) return {total, shares, err:'Còn dư '+money(rest)+' chưa ai trả. Sửa tổng hoặc để trống ô của ai đó'};
+  blanks.forEach(id => shares[id] = rest/blanks.length);
+  return {total, shares, blanks};
+}
+
+function updateHints(){
+  const n = selected.size;
+  $('countText').textContent = '('+n+' người)';
+  const hint = $('amountHint');
+  hint.classList.remove('err');
+  if(splitMode === 'deu'){
+    const amt = parseMoney($('amount').value);
+    hint.innerHTML = amt
+      ? '= <b>'+money(amt)+'</b>' + (n ? ' · mỗi người <b>'+money(amt/n)+'</b>' : '')
+      : 'Gõ tắt được: 350k, 1.2tr';
+    return;
+  }
+  const r = computeShares();
+  // gợi ý phần chia cho người để trống
+  document.querySelectorAll('[data-share]').forEach(inp => {
+    const id = inp.dataset.share;
+    inp.placeholder = (!r.err && r.blanks && r.blanks.includes(id)) ? 'chia phần còn lại: '+money(r.shares[id]) : 'VD: 45k';
+  });
+  if(r.err){
+    const anyInput = $('amount').value || Object.values(customVals).some(v=>v);
+    hint.innerHTML = anyInput ? r.err : 'Nhập tiền từng người. Ai để trống sẽ chia đều phần còn lại của tổng.';
+    if(anyInput) hint.classList.add('err');
+  } else {
+    hint.innerHTML = 'Tổng <b>'+money(r.total)+'</b>' +
+      (r.blanks && r.blanks.length ? ' · '+r.blanks.length+' người để trống chia đều phần còn lại' : '');
+  }
+}
+
+function saveMeal(){
+  const r = computeShares();
+  if(r.err){ toast(r.err); return; }
+  const custom = splitMode === 'rieng';
+  const data = {
+    date: curDate, type: mealType, people: [...selected], amount: r.total,
+    shares: custom ? Object.fromEntries(Object.entries(r.shares).map(([k,v])=>[k,Math.round(v)])) : null,
+    payer: $('payer').value || null, note: $('note').value.trim()
+  };
+  if(editingId){
+    const m = S.meals.find(x=>x.id===editingId);
+    Object.assign(m, data);
+    toast('Đã cập nhật');
+  } else {
+    S.meals.push({id: uid(), created: Date.now(), ...data});
+    toast('Đã lưu ' + typeName(mealType).toLowerCase() + ' ngày ' + shortDate(curDate));
+  }
+  S.skips = S.skips.filter(d => d !== curDate);
+  save();
+  resetForm();
+  renderAll();
+}
+
+function startEdit(id){
+  const m = S.meals.find(x=>x.id===id); if(!m) return;
+  editingId = id;
+  curDate = m.date; mealType = m.type;
+  selected = new Set(m.people);
+  splitMode = m.shares ? 'rieng' : 'deu';
+  customVals = m.shares ? Object.fromEntries(Object.entries(m.shares).map(([k,v])=>[k,String(v)])) : {};
+  $('amount').value = m.amount;
+  $('note').value = m.note || '';
+  renderForm();
+  $('payer').value = m.payer || '';
+  $('entryTitle').textContent = 'Sửa bữa ăn';
+  $('saveBtn').textContent = 'Cập nhật';
+  $('cancelEdit').hidden = false;
+  $('entryCard').classList.add('editing');
+  renderDay(); renderMissing();
+  $('entryCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function deleteMeal(id){
+  if(!confirm('Xóa bữa ăn này?')) return;
+  S.meals = S.meals.filter(x=>x.id!==id);
+  if(editingId===id) resetForm();
+  save(); renderAll(); toast('Đã xóa');
+}
+
+function goDate(d){
+  curDate = d;
+  if(editingId) { editingId = null; }
+  resetForm();
+  renderDay(); renderMissing();
+}
+
+/* ---------- bữa trong ngày ---------- */
+/* số tiền từng người của một bữa */
+const shareOf = m => m.shares || Object.fromEntries(m.people.map(p=>[p, m.amount/m.people.length]));
+
+function mealCard(m){
+  const per = m.amount / m.people.length;
+  const who = m.shares
+    ? m.people.map(p => esc(nameOf(p))+' <b>'+money(m.shares[p]||0)+'</b>').join(', ')
+    : m.people.length+' người × '+money(per)+' · '+m.people.map(nameOf).map(esc).join(', ');
+  return `<div class="meal">
+    <div class="top">
+      <div class="row"><span class="badge ${m.type==='bosung'?'extra':''}">${typeName(m.type)}</span>
+        <span class="amt">${money(m.amount)}</span></div>
+      <div class="row"><button class="small" data-edit="${m.id}">Sửa</button>
+        <button class="small danger" data-del="${m.id}">Xóa</button></div>
+    </div>
+    <div class="meta">${m.shares?'<span class="badge extra" style="font-size:11px">Chia riêng</span> ':''}${who}</div>
+    ${m.payer ? `<div class="meta">💳 ${esc(nameOf(m.payer))} trả</div>` : ''}
+    ${m.note ? `<div class="meta">📝 ${esc(m.note)}</div>` : ''}
+  </div>`;
+}
+
+function renderDay(){
+  $('dayTitle').textContent = 'Bữa ngày ' + shortDate(curDate);
+  const meals = S.meals.filter(m=>m.date===curDate).sort((a,b)=>(a.type>b.type?1:-1)||a.created-b.created);
+  const skipped = S.skips.includes(curDate);
+  if(meals.length){
+    const total = meals.reduce((s,m)=>s+m.amount,0);
+    $('dayList').innerHTML = meals.map(mealCard).join('') +
+      (meals.length>1 ? `<div class="hint" style="text-align:right">Tổng ngày: <b>${money(total)}</b></div>` : '');
+  } else if(skipped){
+    $('dayList').innerHTML = `<div class="empty">Ngày này đã đánh dấu <b>không ăn chung</b>.<br>
+      <button class="small" id="unskip" style="margin-top:8px">Bỏ đánh dấu</button></div>`;
+  } else {
+    $('dayList').innerHTML = `<div class="empty">Chưa có bữa nào.<br>
+      <button class="small" id="skip" style="margin-top:8px">Đánh dấu ngày này không ăn chung</button></div>`;
+  }
+}
+
+/* ---------- ngày quên nhập ---------- */
+function renderMissing(){
+  const t = todayStr();
+  if(!S.meals.length){ $('missing').innerHTML=''; return; }
+  const first = S.meals.map(m=>m.date).sort()[0];
+  let start = addDays(t,-30);
+  if(first > start) start = first;
+  const has = new Set(S.meals.map(m=>m.date));
+  const miss = [];
+  for(let d = start; d < t; d = addDays(d,1)){
+    if(!has.has(d) && !S.skips.includes(d)) miss.push(d);
+  }
+  $('missing').innerHTML = miss.length ? `<div class="banner">
+      <b>⏰ Có ${miss.length} ngày chưa nhập</b> trong 30 ngày qua. Bấm vào ngày để nhập bù, hoặc đánh dấu “không ăn chung”.
+      <div class="chips">${miss.reverse().map(d=>`<span class="chip" data-go="${d}">${shortDate(d)}</span>`).join('')}</div>
+    </div>` : '';
+}
+
+/* ---------- tổng kết tháng ---------- */
+function monthData(){ return rangeData(curMonth+'-01', curMonth+'-31'); }
+
+function rangeData(from, to){
+  const meals = S.meals.filter(m=>m.date>=from && m.date<=to)
+    .sort((a,b)=>a.date.localeCompare(b.date) || (a.type>b.type?1:a.type<b.type?-1:0) || a.created-b.created);
+  const rows = {};
+  const row = id => rows[id] || (rows[id] = {id, count:0, owe:0, paid:0});
+  meals.forEach(m=>{
+    const sh = shareOf(m);
+    m.people.forEach(p=>{ const r=row(p); r.count++; r.owe+=(sh[p]||0); });
+    if(m.payer) row(m.payer).paid += m.amount;
+  });
+  const hasPayer = meals.some(m=>m.payer);
+  const list = Object.values(rows).sort((a,b)=>b.owe-a.owe);
+  return {meals, list, hasPayer, total: meals.reduce((s,m)=>s+m.amount,0)};
+}
+
+function renderSummary(){
+  $('month').value = curMonth;
+  const {meals, list, hasPayer, total} = monthData();
+  if(!meals.length){
+    $('sumTable').innerHTML = '<tr><td class="empty" style="text-align:center">Tháng này chưa có bữa nào.</td></tr>';
+    $('monthList').innerHTML = '';
+    return;
+  }
+  $('sumTable').innerHTML = `
+    <thead><tr><th>Người</th><th>Số bữa</th><th>Phải trả</th>
+      ${hasPayer?'<th>Đã ứng</th><th>Cân đối</th>':''}</tr></thead>
+    <tbody>${list.map(r=>{
+      const bal = r.paid - r.owe;
+      return `<tr><td>${esc(nameOf(r.id))}</td><td>${r.count}</td><td>${money(r.owe)}</td>
+        ${hasPayer?`<td>${r.paid?money(r.paid):'–'}</td>
+        <td class="${bal>0.5?'pos':bal<-0.5?'neg':''}">${Math.abs(bal)<0.5?'0đ':(bal>0?'+':'−')+money(Math.abs(bal))}</td>`:''}</tr>`;
+    }).join('')}</tbody>
+    <tfoot><tr><td>Tổng (${meals.length} bữa)</td><td></td><td>${money(total)}</td>${hasPayer?'<td></td><td></td>':''}</tr></tfoot>`;
+
+  // danh sách bữa trong tháng
+  const byDate = {};
+  meals.forEach(m=>(byDate[m.date] = byDate[m.date] || []).push(m));
+  $('monthList').innerHTML = (hasPayer ? '<div class="hint">Cân đối: <span class="pos">+</span> là được nhận lại, <span class="neg">−</span> là còn phải đưa.</div>' : '') +
+    '<div class="daygroup">' + Object.keys(byDate).sort().reverse().map(d=>
+      `<div class="d">${fmtDate(d)}</div>` + byDate[d].map(m=>
+        `<div class="mline" data-edit="${m.id}"><span>${m.type==='bosung'?'➕ ':''}${typeName(m.type)} · ${m.people.length} người${m.note?' · '+esc(m.note):''}</span><b>${money(m.amount)}</b></div>`
+      ).join('')
+    ).join('') + '</div>';
+}
+
+function copySummary(){
+  const data = monthData();
+  if(!data.meals.length){ toast('Tháng này chưa có dữ liệu'); return; }
+  const [y,mo] = curMonth.split('-');
+  copyText(summaryText('tháng '+mo+'/'+y, data));
+}
+function summaryText(title, {meals, list, hasPayer, total}){
+  let txt = `🍚 Tiền ăn ${title} (${meals.length} bữa, tổng ${money(total)})\n`;
+  list.forEach(r=>{
+    txt += `• ${nameOf(r.id)}: ${r.count} bữa – ${money(r.owe)}`;
+    if(hasPayer){
+      const bal = r.paid - r.owe;
+      if(bal > 0.5) txt += ` (đã ứng ${money(r.paid)}, được nhận lại ${money(bal)})`;
+      else if(bal < -0.5) txt += ` → còn phải đưa ${money(-bal)}`;
+    }
+    txt += '\n';
+  });
+  return txt;
+}
+function copyText(txt){
+  const done = () => toast('Đã copy, dán vào Zalo/Messenger nhé');
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(txt).then(done, ()=>fallbackCopy(txt, done));
+  } else fallbackCopy(txt, done);
+}
+function fallbackCopy(txt, done){
+  const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
+  ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ prompt('Copy đoạn này:', txt); }
+  ta.remove();
+}
+
+/* ---------- báo cáo theo khoảng ngày ---------- */
+const dmy = s => { const [y,m,d] = s.split('-'); return d+'/'+m+'/'+y; };
+function setRange(kind){
+  const t = todayStr(), d = parseYmd(t);
+  let from = t, to = t;
+  if(kind==='month'){ from = t.slice(0,8)+'01'; }
+  else if(kind==='lastmonth'){
+    const a = new Date(d.getFullYear(), d.getMonth()-1, 1), b = new Date(d.getFullYear(), d.getMonth(), 0);
+    from = ymd(a); to = ymd(b);
+  }
+  else if(kind==='week'){ from = addDays(t, -((d.getDay()+6)%7)); }
+  else if(kind==='7'){ from = addDays(t,-6); }
+  $('rFrom').value = from; $('rTo').value = to;
+  renderRangePreview();
+}
+function getRange(){
+  let from = $('rFrom').value, to = $('rTo').value;
+  if(!from || !to){ toast('Chọn đủ từ ngày và đến ngày'); return null; }
+  if(from > to) [from, to] = [to, from];
+  const data = rangeData(from, to);
+  if(!data.meals.length){ toast('Không có bữa nào trong khoảng này'); return null; }
+  return {from, to, data};
+}
+function renderRangePreview(){
+  let from = $('rFrom').value, to = $('rTo').value;
+  if(!from || !to){ $('rPreview').textContent=''; return; }
+  if(from > to) [from, to] = [to, from];
+  const {meals, list, total} = rangeData(from, to);
+  const days = Math.round((parseYmd(to)-parseYmd(from))/864e5)+1;
+  $('rPreview').innerHTML = `${dmy(from)} → ${dmy(to)} (${days} ngày): ` +
+    (meals.length ? `<b>${meals.length} bữa</b> · ${list.length} người · tổng <b>${money(total)}</b>` : 'chưa có bữa nào');
+}
+
+/* --- ghi file Excel .xlsx (không cần thư viện, chạy cả khi offline) --- */
+function crc32(buf){
+  const t = crc32.t || (crc32.t = Array.from({length:256}, (_,n)=>{ let c=n; for(let k=0;k<8;k++) c = c&1 ? 0xEDB88320^(c>>>1) : c>>>1; return c>>>0; }));
+  let crc = -1; for(let i=0;i<buf.length;i++) crc = t[(crc^buf[i])&255]^(crc>>>8);
+  return (crc^-1)>>>0;
+}
+function makeZip(files){
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  files.forEach(f=>{
+    const name = enc.encode(f.name), data = enc.encode(f.data), crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true);
+    h.setUint16(12,0x21,true); h.setUint32(14,crc,true); h.setUint32(18,data.length,true);
+    h.setUint32(22,data.length,true); h.setUint16(26,name.length,true);
+    parts.push(h, name, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true);
+    c.setUint16(14,0x21,true); c.setUint32(16,crc,true); c.setUint32(20,data.length,true);
+    c.setUint32(24,data.length,true); c.setUint16(28,name.length,true); c.setUint32(42,off,true);
+    central.push(c, name);
+    off += 30 + name.length + data.length;
+  });
+  const size = central.reduce((s,p)=>s+p.byteLength,0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true);
+  e.setUint32(12,size,true); e.setUint32(16,off,true);
+  return new Blob([...parts, ...central, e], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+const xe = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function colName(i){ let s=''; i++; while(i){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26); } return s; }
+// ô: giá trị hoặc {v, s}. Kiểu: 0 thường, 1 đậm, 2 số, 3 số đậm, 4 tiêu đề, 5 đầu cột
+function sheetXml(rows, widths){
+  const body = rows.map((r,ri)=>'<row r="'+(ri+1)+'">'+r.map((c,ci)=>{
+    if(c==null || c==='') return '';
+    const o = (typeof c==='object') ? c : {v:c};
+    const ref = colName(ci)+(ri+1), num = typeof o.v==='number';
+    const s = o.s!=null ? o.s : (num?2:0);
+    return num ? `<c r="${ref}" s="${s}"><v>${o.v}</v></c>`
+               : `<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${xe(o.v)}</t></is></c>`;
+  }).join('')+'</row>').join('');
+  const cols = '<cols>'+widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')+'</cols>';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+cols+'<sheetData>'+body+'</sheetData></worksheet>';
+}
+function makeXlsx(sheets){
+  const NS = 'http://schemas.openxmlformats.org', CT = 'application/vnd.openxmlformats-officedocument.spreadsheetml.';
+  const head = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  const files = [
+    {name:'[Content_Types].xml', data: head+`<Types xmlns="${NS}/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="${CT}sheet.main+xml"/>`+
+      sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="${CT}worksheet+xml"/>`).join('')+
+      `<Override PartName="/xl/styles.xml" ContentType="${CT}styles+xml"/></Types>`},
+    {name:'_rels/.rels', data: head+`<Relationships xmlns="${NS}/package/2006/relationships"><Relationship Id="rId1" Type="${NS}/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:'xl/workbook.xml', data: head+`<workbook xmlns="${NS}/spreadsheetml/2006/main" xmlns:r="${NS}/officeDocument/2006/relationships"><sheets>`+
+      sheets.map((s,i)=>`<sheet name="${xe(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')+'</sheets></workbook>'},
+    {name:'xl/_rels/workbook.xml.rels', data: head+`<Relationships xmlns="${NS}/package/2006/relationships">`+
+      sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="${NS}/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')+
+      `<Relationship Id="rId${sheets.length+1}" Type="${NS}/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`},
+    {name:'xl/styles.xml', data: head+`<styleSheet xmlns="${NS}/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0"/></numFmts>`+
+      '<fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><name val="Calibri"/></font></fonts>'+
+      '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFDEEE5"/></patternFill></fill></fills>'+
+      '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'+
+      '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6">'+
+      '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+      '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'+
+      '<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'+
+      '<xf numFmtId="164" fontId="1" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/>'+
+      '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>'+
+      '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/>'+
+      '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'},
+    ...sheets.map((s,i)=>({name:`xl/worksheets/sheet${i+1}.xml`, data: sheetXml(s.rows, s.widths)}))
+  ];
+  return makeZip(files);
+}
+function downloadBlob(blob, filename){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
+function exportXlsx(){
+  const r = getRange(); if(!r) return;
+  const {from, to, data:{meals, list, hasPayer, total}} = r;
+  const H = v => ({v, s:5});
+  const title = 'Báo cáo tiền ăn từ '+dmy(from)+' đến '+dmy(to);
+
+  const sum = [[{v:title, s:4}], ['Xuất lúc '+new Date().toLocaleString('vi-VN')], [],
+    [H('Người'), H('Số bữa'), H('Phải trả (đ)'), ...(hasPayer?[H('Đã ứng (đ)'), H('Cân đối (đ)'), H('Ghi chú')]:[])]];
+  list.forEach(x=>{
+    const bal = Math.round(x.paid - x.owe);
+    sum.push([nameOf(x.id), x.count, Math.round(x.owe),
+      ...(hasPayer?[Math.round(x.paid), bal, bal>0?'Được nhận lại':bal<0?'Còn phải đưa':'Đã đủ']:[])]);
+  });
+  sum.push([{v:'Tổng cộng', s:1}, {v:meals.length, s:3}, {v:total, s:3}]);
+
+  const ppl = list.map(x=>x.id);
+  const det = [[{v:title, s:4}], [],
+    [H('Ngày'), H('Thứ'), H('Loại bữa'), H('Tổng tiền (đ)'), H('Số người'), H('Người trả'), H('Ghi chú'), ...ppl.map(p=>H(nameOf(p)))]];
+  meals.forEach(m=>{
+    const sh = shareOf(m);
+    det.push([dmy(m.date), DOW[parseYmd(m.date).getDay()], typeName(m.type), m.amount, m.people.length,
+      m.payer?nameOf(m.payer):'', m.note||'', ...ppl.map(p=>sh[p]!=null?Math.round(sh[p]):'')]);
+  });
+  det.push([{v:'Tổng cộng', s:1}, '', '', {v:total, s:3}, '', '', '',
+    ...list.map(x=>({v:Math.round(x.owe), s:3}))]);
+
+  const blob = makeXlsx([
+    {name:'Tổng hợp', rows:sum, widths:[22,10,16,16,16,16]},
+    {name:'Chi tiết', rows:det, widths:[12,10,13,14,10,14,28,...ppl.map(()=>13)]}
+  ]);
+  downloadBlob(blob, `bao-cao-tien-an_${from}_den_${to}.xlsx`);
+  toast('Đã xuất file Excel');
+}
+
+function exportPdf(){
+  const r = getRange(); if(!r) return;
+  const {from, to, data:{meals, list, hasPayer, total}} = r;
+  let h = `<h1>Báo cáo tiền ăn</h1><div class="sub">Từ ${fmtDate(from)} đến ${fmtDate(to)} · ${meals.length} bữa · tổng ${money(total)}</div>
+    <h2>Tổng hợp theo người</h2><table><tr><th class="l">Người</th><th>Số bữa</th><th>Phải trả</th>${hasPayer?'<th>Đã ứng</th><th>Cân đối</th>':''}</tr>`;
+  list.forEach(x=>{
+    const bal = x.paid - x.owe;
+    h += `<tr><td class="l">${esc(nameOf(x.id))}</td><td>${x.count}</td><td>${money(x.owe)}</td>${hasPayer?
+      `<td>${x.paid?money(x.paid):'–'}</td><td>${Math.abs(bal)<0.5?'Đủ':(bal>0?'Được nhận ':'Phải đưa ')+money(Math.abs(bal))}</td>`:''}</tr>`;
+  });
+  h += `<tr><th class="l">Tổng cộng</th><th>${meals.length}</th><th>${money(total)}</th>${hasPayer?'<th></th><th></th>':''}</tr></table>
+    <h2>Chi tiết từng bữa</h2><table><tr><th class="l">Ngày</th><th class="l">Bữa</th><th>Tiền</th><th class="l">Người ăn</th><th class="l">Ghi chú</th></tr>`;
+  meals.forEach(m=>{
+    const sh = shareOf(m);
+    h += `<tr><td class="l">${shortDate(m.date)}</td><td class="l">${typeName(m.type)}</td><td>${money(m.amount)}</td>
+      <td class="l">${m.people.map(p=>esc(nameOf(p))+(m.shares?' '+money(sh[p]):'')).join(', ')}${m.payer?'<br><span class="sub">'+esc(nameOf(m.payer))+' trả</span>':''}</td>
+      <td class="l">${esc(m.note||'')}</td></tr>`;
+  });
+  h += `</table><div class="sub" style="margin-top:10px">Xuất lúc ${new Date().toLocaleString('vi-VN')}</div>`;
+  $('printArea').innerHTML = h;
+  const old = document.title;
+  document.title = `bao-cao-tien-an_${from}_den_${to}`;
+  setTimeout(()=>{ window.print(); document.title = old; }, 50);
+}
+
+/* ---------- thành viên ---------- */
+function renderMembers(){
+  const used = new Set(S.meals.flatMap(m=>[...m.people, m.payer]));
+  $('memberList').innerHTML = S.members.length ? S.members.map(m=>`
+    <div class="member ${m.active===false?'off':''}"><span>${esc(m.name)}</span>
+      <div class="row">
+        <button class="small" data-rename="${m.id}">Đổi tên</button>
+        ${m.active===false
+          ? `<button class="small" data-show="${m.id}">Hiện lại</button>`
+          : used.has(m.id)
+            ? `<button class="small" data-hide="${m.id}" title="Giữ lịch sử, không hiện khi nhập">Ẩn</button>`
+            : `<button class="small danger" data-delm="${m.id}">Xóa</button>`}
+      </div></div>`).join('')
+    : '<div class="empty">Thêm tên các thành viên hay ăn cùng nhau để bắt đầu.</div>';
+}
+function addMember(){
+  const name = $('newMember').value.trim();
+  if(!name) return;
+  if(S.members.some(m=>m.name.toLowerCase()===name.toLowerCase())){ toast('Tên này đã có'); return; }
+  const m = {id: uid(), name, active: true};
+  S.members.push(m);
+  if(!editingId) selected.add(m.id);
+  $('newMember').value = '';
+  save(); renderAll();
+}
+
+/* ---------- render tổng ---------- */
+function renderAll(){ renderForm(); renderDay(); renderMissing(); renderSummary(); renderMembers(); renderRangePreview(); }
+
+/* ---------- sự kiện ---------- */
+$('date').addEventListener('change', e => { if(e.target.value) goDate(e.target.value); });
+$('prevDay').onclick = () => goDate(addDays(curDate,-1));
+$('nextDay').onclick = () => goDate(addDays(curDate,1));
+$('todayBtn').onclick = () => goDate(todayStr());
+$('mealType').onclick = e => { const b = e.target.closest('button'); if(b){ mealType = b.dataset.v; renderForm(); } };
+$('people').onclick = e => {
+  const c = e.target.closest('.chip'); if(!c) return;
+  const id = c.dataset.id; selected.has(id) ? selected.delete(id) : selected.add(id);
+  c.classList.toggle('on'); renderShares();
+};
+$('splitMode').onclick = e => { const b = e.target.closest('button'); if(b){ splitMode = b.dataset.v; renderShares(); } };
+$('shares').addEventListener('input', e => { const id = e.target.dataset.share; if(id){ customVals[id] = e.target.value; updateHints(); } });
+$('shares').addEventListener('keydown', e => { if(e.key==='Enter') saveMeal(); });
+$('selAll').onclick = () => { selected = new Set(activeMembers().map(m=>m.id)); renderForm(); };
+$('selNone').onclick = () => { selected = new Set(); renderForm(); };
+$('amount').addEventListener('input', updateHints);
+$('amount').addEventListener('keydown', e => { if(e.key==='Enter') saveMeal(); });
+$('saveBtn').onclick = saveMeal;
+$('cancelEdit').onclick = () => { resetForm(); renderDay(); };
+$('month').addEventListener('change', e => { if(e.target.value){ curMonth = e.target.value; renderSummary(); } });
+$('copyBtn').onclick = copySummary;
+document.querySelectorAll('[data-range]').forEach(b => b.onclick = () => setRange(b.dataset.range));
+$('rFrom').addEventListener('change', renderRangePreview);
+$('rTo').addEventListener('change', renderRangePreview);
+$('exportCsv').onclick = exportXlsx;
+$('exportPdf').onclick = exportPdf;
+$('copyRange').onclick = () => { const r = getRange(); if(r) copyText(summaryText('từ '+dmy(r.from)+' đến '+dmy(r.to), r.data)); };
+$('addMember').onclick = addMember;
+$('newMember').addEventListener('keydown', e => { if(e.key==='Enter') addMember(); });
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-edit],[data-del],[data-go],[data-rename],[data-hide],[data-show],[data-delm],#skip,#unskip');
+  if(!t) return;
+  const d = t.dataset;
+  if(d.edit) startEdit(d.edit);
+  else if(d.del) deleteMeal(d.del);
+  else if(d.go) { goDate(d.go); $('entryCard').scrollIntoView({behavior:'smooth'}); }
+  else if(d.rename){
+    const m = S.members.find(x=>x.id===d.rename);
+    const n = prompt('Tên mới:', m.name);
+    if(n && n.trim()){ m.name = n.trim(); save(); renderAll(); }
+  }
+  else if(d.hide){ S.members.find(x=>x.id===d.hide).active = false; selected.delete(d.hide); save(); renderAll(); }
+  else if(d.show){ S.members.find(x=>x.id===d.show).active = true; save(); renderAll(); }
+  else if(d.delm){
+    if(confirm('Xóa thành viên này?')){ S.members = S.members.filter(x=>x.id!==d.delm); selected.delete(d.delm); save(); renderAll(); }
+  }
+  else if(t.id==='skip'){ S.skips.push(curDate); save(); renderDay(); renderMissing(); toast('Đã đánh dấu không ăn chung'); }
+  else if(t.id==='unskip'){ S.skips = S.skips.filter(x=>x!==curDate); save(); renderDay(); renderMissing(); }
+});
+
+$('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(S, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'so-tien-an-' + todayStr() + '.json';
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+};
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const d = JSON.parse(r.result);
+      if(!Array.isArray(d.members) || !Array.isArray(d.meals)) throw 0;
+      if(!confirm('Thay toàn bộ dữ liệu hiện tại bằng file này?')) return;
+      S = {members:d.members, meals:d.meals, skips:d.skips||[]};
+      save(); resetForm(); renderAll(); toast('Đã nhập dữ liệu');
+    }catch(err){ toast('File không hợp lệ'); }
+  };
+  r.readAsText(f); e.target.value = '';
+};
+
+/* ---------- khởi động ---------- */
+tick(); setInterval(tick, 1000);
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+setRange('month');
+resetForm();
+renderAll();
+</script>
+</body>
+</html>
